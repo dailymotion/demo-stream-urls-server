@@ -1,0 +1,132 @@
+[project]
+name = "demo-stream-urls-server"
+version = "0.0.1"
+
+requires-python = ">= 3.11"
+dependencies = [
+    "aiohttp>=3.8.3",
+    "click>=8.1.3",
+    "fastapi>=0.89.1",
+    "redis>=4.2.0",
+    "uvicorn>=0.20.0",
+]
+
+[project.optional-dependencies]
+
+[tool.pdm.dev-dependencies]
+dev = [
+    "bandit[toml]>=1.7.4",
+    "black>=22.12.0",
+    "freezegun>=1.2.2",
+    "isort>=5.11.4",
+    "mypy>=0.991",
+    "pylint>=2.15.10",
+    "pytest>=7.2.0",
+    "pytest-asyncio>=0.20.3",
+    "pytest-cov>=4.0.0",
+    "types-redis>=4.4.0.0",
+    "xenon>=0.9.0",
+]
+
+[tool.bandit]
+skips = []
+
+[tool.black]
+line-length = 79
+target-version = ["py311"]
+
+[tool.coverage.run]
+branch = true
+data_file = "reports/.coverage"
+omit = ["tests/*"]
+
+[tool.coverage.report]
+show_missing = true
+
+[tool.isort]
+py_version = 311
+profile = "black"
+line_length = 79
+indent = '    '
+known_first_party = ["tests"]
+combine_as_imports = true
+lines_between_types = true
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+
+# Per-module options:
+follow_imports = "silent"
+ignore_missing_imports = true
+
+plugins = []
+
+[tool.pdm.scripts]
+format-imports-cmd = "isort"
+format-sources-cmd = "black"
+format-imports = "pdm run format-imports-cmd src/. tests/."
+format-sources = "pdm run format-sources-cmd src tests"
+format = {composite = ["format-imports", "format-sources"]}
+
+check-format-imports = "isort --check-only src/. tests/."
+check-format-sources = "black --check src tests"
+check-format = {composite = ["check-format-imports", "check-format-sources"]}
+check-typing = "mypy src"
+check-lint = "pylint --reports=y --output-format=text:reports/pylint_reports.txt,colorized src"
+style = {composite = ["check-format", "check-typing", "check-lint"]}
+
+complexity = "xenon --max-absolute B --max-modules B --max-average A src"
+
+security-sast = "bandit -c pyproject.toml -r src"
+
+test-unit = {cmd = [
+    "pytest", "tests/unit",
+        "--junitxml=reports/report_unit_tests.xml",
+        "--cov", "src",
+        "--cov-config", ".coveragerc",
+        "--cov-report", "term-missing",
+        "--cov-report", "xml:reports/coverage.xml",
+], env = {APP_ENV = "test", APP_REGION = "test"}}
+test = {composite = ["test-unit"]}
+
+quality-checks = {composite = ["style", "complexity", "security-sast", "test"]}
+
+check-dependencies = "pdm install --check --dry-run"
+
+[tool.pylint.basic]
+good-names = [
+    "e",  # Exception variable alias
+    "fh",  # File handler
+    "i", "j", "k",  # Loop control vars
+    "_", "__", "___",  # Unused vars
+    "logger",
+    "config",
+]
+
+[tool.pylint.messages_control]
+max-args = 5
+max-line-length = 140
+max-locals = 13
+max-returns = 10
+max-branches = 45
+max-statements = 100
+max-public-methods = 30
+max-attributes = 12
+max-module-lines = 800
+notes = "FIXME"
+
+disable=[
+    "missing-module-docstring",
+]
+
+[tool.pytest.ini_options]
+addopts = "-s -vvvvvv"
+asyncio_mode = "auto"
+junit_family = "xunit2"
+pythonpath = "src"
+
+[build-system]
+requires = ["pdm-pep517"]
+build-backend = "pdm.pep517.api"

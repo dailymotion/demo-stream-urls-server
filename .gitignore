@@ -1,0 +1,12 @@
+.mypy_cache/
+.pytest_cache/
+__pypackages__/
+__pycache__/
+
+reports/*
+!reports/.gitkeep
+
+.secrets/*
+!.secrets/.gitkeep
+
+.pdm.toml

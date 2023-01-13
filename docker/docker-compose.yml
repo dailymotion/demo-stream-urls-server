@@ -1,0 +1,45 @@
+version: "3.9"
+
+networks:
+  ns:
+    driver: bridge
+
+services:
+  app: &app
+    build:
+      context: ./..
+      dockerfile: ./docker/Dockerfile
+    networks:
+      - ns
+    environment:
+      - CACHE_HOST=redis
+    volumes:
+      - ../src/:/app/src/
+      - ../tests/:/app/tests/
+
+  api:
+    <<: *app
+    networks:
+      - ns
+    ports:
+      - "8000:8000"
+    depends_on:
+      redis:
+        condition: service_healthy
+      refresh-token:
+        condition: service_started
+
+  refresh-token:
+    <<: *app
+    networks:
+      - ns
+    command: ["bin/refresh-access-token-cache.sh"]
+
+  redis:
+    image: redis:alpine
+    networks:
+      - ns
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
