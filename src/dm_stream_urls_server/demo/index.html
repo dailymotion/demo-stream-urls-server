@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="referrer" content="no-referrer">
+  <title>Demo</title>
+  <style>
+    body {
+      font-family: sans-serif;
+    }
+
+    main {
+      display: flex;
+      flex-direction: column;
+      padding: 0 20px;
+      width: 500px;
+    }
+
+    h1 {
+      margin: 10px 0;
+    }
+
+    input, select, button {
+      border-radius: 3px;
+      border: 1px solid #000;
+      box-sizing: border-box;
+      min-height: 24px;
+      padding: 5px;
+    }
+
+    .input {
+      margin: 20px 0;
+    }
+
+    .input > label {
+      display: block;
+      font-size: 14px;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+
+    .input > input, .input > select {
+      width: 50%;
+    }
+
+    .streamUrl {
+      margin-top: 40px;
+    }
+
+    .streamUrl > input {
+      width: 100%;
+    }
+
+    button {
+      background: #000;
+      border-radius: 3px;
+      border: 0;
+      color: #fff;
+      font-weight: bold;
+      padding: 5px 15px;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Stream URL Demo Page</h1>
+    <div class="inputs">
+      <div class="input">
+        <label for="video_id">Enter your video xID</label>
+        <input id="video_id" type="text" name="video_id" placeholder="Video xid" />
+      </div>
+      <div class="input">
+        <label for="format_type">Select quality</label>
+        <select id="format_type" name="format_type">
+          <option value="stream_h264_url">stream_h264_url</option>
+          <option value="stream_h264_hq_url">stream_h264_hq_url</option>
+          <option value="stream_h264_hd_url">stream_h264_hd_url</option>
+          <option value="stream_h264_hd1080_url">stream_h264_hd1080_url</option>
+          <option value="stream_h264_qhd_url">stream_h264_qhd_url</option>
+          <option value="stream_h264_uhd_url">stream_h264_uhd_url</option>
+          <option value="stream_hls_url">stream_hls_url</option>
+        </select>
+      </div>
+      <button id="fetch_btn" name="fetch_btn">Get stream</button>
+      <div class="input streamUrl">
+        <label for="stream_url">Fetched stream URL</label>
+        <input id="stream_url" type="text" name="stream_url" />
+      </div>
+    </div>
+    <video id="demo" controls></video>
+  </main>
+  <script src="https://ajax.googleapis.com/ajax/libs/shaka-player/4.3.3/shaka-player.ui.js"></script>
+  <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/shaka-player/4.3.3/controls.css">
+  <script type="text/javascript">
+    const fetchBtn = document.getElementById('fetch_btn')
+
+    const apiUrl = '/stream-urls'
+
+    const videoPlayer = document.getElementById('demo')
+    const player = new shaka.Player(videoPlayer)
+    window.player = player
+
+    const streamUrlInput = document.getElementById('stream_url')
+
+    fetchBtn.addEventListener('click', () => {
+      const videoId = document.getElementById('video_id').value
+      const formatType = document.getElementById('format_type').value
+      fetch(`${apiUrl}?video_id=${videoId}&video_formats=${formatType}`)
+        .then((res) => res.json())
+        .then((data) => {
+          player.load(data[formatType])
+          streamUrlInput.value = data[formatType]
+        })
+    })
+  </script>
+</body>
+</html>

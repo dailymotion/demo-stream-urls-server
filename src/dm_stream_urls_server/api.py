@@ -4,10 +4,13 @@ import aiohttp
 
 from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.responses import RedirectResponse
+from fastapi.staticfiles import StaticFiles
 
 from dm_stream_urls_server.cache import Cache, get_cache
 from dm_stream_urls_server.stream import get_stream_urls
 from dm_stream_urls_server.token import get_dailymotion_api_access_token
+
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -82,3 +85,5 @@ async def get_stream_urls_route(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error",
         ) from e
+
+app.mount("/demo", StaticFiles(directory = Path(__file__).parent.joinpath("demo"), html = True), name = "demo")
