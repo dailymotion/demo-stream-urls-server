@@ -1,5 +1,7 @@
 import logging
 
+from pathlib import Path
+
 import aiohttp
 
 from fastapi import Depends, FastAPI, HTTPException, Request, status
@@ -9,8 +11,6 @@ from fastapi.staticfiles import StaticFiles
 from dm_stream_urls_server.cache import Cache, get_cache
 from dm_stream_urls_server.stream import get_stream_urls
 from dm_stream_urls_server.token import get_dailymotion_api_access_token
-
-from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +42,7 @@ async def get_access_token(cache: Cache = Depends(get_cache)) -> str | None:
 async def redirect_homepage_to_docs():
     """Redirect Homepage to /docs"""
 
-    return RedirectResponse(url="/docs")
+    return RedirectResponse(url="/demo")
 
 
 @app.get("/stream-urls")
@@ -86,4 +86,9 @@ async def get_stream_urls_route(
             detail="Internal server error",
         ) from e
 
-app.mount("/demo", StaticFiles(directory = Path(__file__).parent.joinpath("demo"), html = True), name = "demo")
+
+app.mount(
+    "/demo",
+    StaticFiles(directory=Path(__file__).parent.joinpath("demo"), html=True),
+    name="demo",
+)
