@@ -48,6 +48,10 @@ The Stream URLs Server gets the end-user IP address from the HTTP request made b
 
 It can also read the IP address as an additional query string parameter: `&client_ip=<client_ip>`.
 
+#### Note About HLS
+
+HLS stream urls may not work locally due to CORS
+
 ## Workflow
 
 ![](docs/workflow.drawio.png)
