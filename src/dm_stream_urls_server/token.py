@@ -47,8 +47,7 @@ async def fetch_dailymotion_api_oauth_token() -> dict:
         async with session.post(
             url=DAILYMOTION_API_OAUTH_TOKEN_URL,
             data={
-                # read_video_streams not available yet
-                "scope": "upload_videos read_videos edit_videos delete_videos",
+                "scope": "read_video_streams",
                 "grant_type": "client_credentials",
                 "client_id": client_id,
                 "client_secret": client_secret,
