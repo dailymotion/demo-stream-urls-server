@@ -19,11 +19,11 @@ app = FastAPI()
 
 
 async def get_client_public_ip() -> str | None:
-    """Call IPIFY.org API to detect public IP address"""
+    """Call ifconfig.me API to detect public IP address"""
 
     async with aiohttp.ClientSession() as session:
         async with session.get(
-            url="https://api.ipify.org/?format=json",
+            url="https://ifconfig.me/all.json",
         ) as response:
             try:
                 response.raise_for_status()
@@ -32,7 +32,7 @@ async def get_client_public_ip() -> str | None:
 
             response_json: dict[str, str] = await response.json()
 
-            return response_json["ip"]
+            return response_json.get("ip_addr")
 
 
 async def get_client_ip(

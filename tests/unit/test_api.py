@@ -102,7 +102,7 @@ class MockResponse:
                 MockResponse(
                     raise_for_status=False,
                     json={
-                        "ip": "101.102.103.104",
+                        "ip_addr": "101.102.103.104",
                     },
                 ),
             ),
