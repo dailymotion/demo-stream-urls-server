@@ -9,10 +9,12 @@ from fastapi import HTTPException, Request
 from dm_stream_urls_server.api import (
     get_access_token,
     get_client_ip,
+    get_client_public_ip,
     get_stream_urls_route,
 )
 
 
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "fastapi_request, client_ip, expected_return",
     (
@@ -49,11 +51,77 @@ from dm_stream_urls_server.api import (
         ),
     ),
 )
-def test_get_client_ip(fastapi_request, client_ip, expected_return):
-    assert expected_return == get_client_ip(
+async def test_get_client_ip(fastapi_request, client_ip, expected_return):
+    assert expected_return == await get_client_ip(
         request=fastapi_request,
         client_ip=client_ip,
     )
+
+
+@patch("dm_stream_urls_server.api.get_client_public_ip")
+async def test_get_client_private_ip(mock_get_client_public_ip):
+    await get_client_ip(
+        request=Request(
+            scope={"type": "http", "client": ("10.11.12.13", None)}
+        ),
+        client_ip=None,
+    )
+
+    mock_get_client_public_ip.assert_awaited_once()
+
+
+class MockResponse:
+    _raise_for_status: bool
+    _json: dict
+
+    def __init__(
+        self,
+        raise_for_status: bool,
+        json: dict,
+    ):
+        self._raise_for_status = raise_for_status
+        self._json = json
+
+    def raise_for_status(self):
+        if self._raise_for_status:
+            raise aiohttp.ClientResponseError(
+                history=None,
+                request_info=None,
+            )
+
+    async def json(self):
+        return self._json
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "ip_detector_side_effect, expected_return",
+    (
+        (
+            (
+                MockResponse(
+                    raise_for_status=False,
+                    json={
+                        "ip": "101.102.103.104",
+                    },
+                ),
+            ),
+            "101.102.103.104",
+        ),
+        (
+            (MockResponse(raise_for_status=True, json={}),),
+            None,
+        ),
+    ),
+)
+@patch("dm_stream_urls_server.api.aiohttp.ClientSession.get")
+async def test_get_client_public_ip(
+    mock_get,
+    ip_detector_side_effect,
+    expected_return,
+):
+    mock_get.return_value.__aenter__.side_effect = ip_detector_side_effect
+    assert expected_return == await get_client_public_ip()
 
 
 @pytest.mark.asyncio
