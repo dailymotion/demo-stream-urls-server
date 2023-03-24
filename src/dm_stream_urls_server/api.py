@@ -1,3 +1,4 @@
+import ipaddress
 import logging
 
 from pathlib import Path
@@ -17,7 +18,24 @@ logger = logging.getLogger(__name__)
 app = FastAPI()
 
 
-def get_client_ip(
+async def get_client_public_ip() -> str | None:
+    """Call ifconfig.me API to detect public IP address"""
+
+    async with aiohttp.ClientSession() as session:
+        async with session.get(
+            url="https://ifconfig.me/all.json",
+        ) as response:
+            try:
+                response.raise_for_status()
+            except aiohttp.ClientResponseError:
+                return None
+
+            response_json: dict[str, str] = await response.json()
+
+            return response_json.get("ip_addr")
+
+
+async def get_client_ip(
     request: Request,
     client_ip: str | None = None,
 ) -> str | None:
@@ -27,7 +45,12 @@ def get_client_ip(
         return client_ip
 
     if request.client:
-        return request.client.host
+        request_client_ip = request.client.host
+
+        if ipaddress.ip_address(request_client_ip).is_private:
+            return await get_client_public_ip()
+
+        return request_client_ip
 
     return None
 
