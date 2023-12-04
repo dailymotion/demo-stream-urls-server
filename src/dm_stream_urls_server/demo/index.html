@@ -104,11 +104,16 @@
     const streamUrlInput = document.getElementById('stream_url')
 
     const videoPlayer = videojs('demo')
+    let clientIp;
+
+    fetch("https://ifconfig.me/all.json")
+      .then((res) => res.json())
+      .then((data) => {clientIp = data.ip_addr})
 
     fetchBtn.addEventListener('click', () => {
       const videoId = document.getElementById('video_id').value
       const formatType = document.getElementById('format_type').value
-      fetch(`${apiUrl}?video_id=${videoId}&video_formats=${formatType}`)
+      fetch(`${apiUrl}?video_id=${videoId}&video_formats=${formatType}&client_ip=${clientIp}`)
         .then((res) => res.json())
         .then((data) => {
           videoPlayer.src(data[formatType])
