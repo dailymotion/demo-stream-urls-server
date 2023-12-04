@@ -1,3 +1,7 @@
+# 0.0.4 (2023-04-03)
+
+- Switch Docker base image from `python:3.11-alpine` to `python:3.11` (fix [#6](https://github.com/dailymotion/demo-stream-urls-server/issues/6))
+
 # 0.0.3 (2023-03-24)
 
 - Fix IP detection when running on both player and server on the same machine (using [ifconfig.me](https://ifconfig.me))
