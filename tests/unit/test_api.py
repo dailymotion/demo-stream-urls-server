@@ -5,13 +5,11 @@ import aiohttp
 import pytest
 
 from fastapi import HTTPException, Request
-from fastapi.responses import RedirectResponse
 
 from dm_stream_urls_server.api import (
     get_access_token,
     get_client_ip,
     get_client_public_ip,
-    get_permanent_stream_url_route,
     get_stream_urls_route,
 )
 
@@ -187,79 +185,6 @@ async def test_get_stream_urls_route(
     get_stream_urls.assert_awaited_once_with(
         video_id=video_id,
         video_formats=video_formats,
-        client_ip=client_ip,
-        authorization=authorization,
-    )
-
-
-@pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "get_stream_urls_side_effect, expected_exception",
-    (
-        (
-            (None,),
-            pytest.raises(HTTPException),
-        ),
-        (
-            ({},),
-            pytest.raises(HTTPException),
-        ),
-        (
-            ({"format1": None},),
-            pytest.raises(HTTPException),
-        ),
-        (
-            ({"format1": ""},),
-            pytest.raises(HTTPException),
-        ),
-        (
-            (
-                aiohttp.ClientResponseError(
-                    request_info=None,
-                    history=(),
-                    status=404,
-                    message="Not found",
-                ),
-            ),
-            pytest.raises(HTTPException),
-        ),
-        (
-            (RuntimeError(),),
-            pytest.raises(HTTPException),
-        ),
-        (
-            ({"format1": "redirect_url"},),
-            does_not_raise(),
-        ),
-    ),
-)
-@patch("dm_stream_urls_server.api.get_stream_urls")
-async def test_get_permanent_stream_url_route(
-    get_stream_urls,
-    get_stream_urls_side_effect,
-    expected_exception,
-):
-    video_id = "xVideoId"
-    video_format = "format1"
-    client_ip = "a.b.c.d"
-    authorization = "test-token"
-
-    get_stream_urls.side_effect = get_stream_urls_side_effect
-
-    with expected_exception:
-        response = await get_permanent_stream_url_route(
-            video_id,
-            video_format,
-            client_ip,
-            authorization,
-        )
-
-        assert RedirectResponse == type(response)
-        assert "redirect_url" == response.headers["location"]
-
-    get_stream_urls.assert_awaited_once_with(
-        video_id=video_id,
-        video_formats=video_format,
         client_ip=client_ip,
         authorization=authorization,
     )

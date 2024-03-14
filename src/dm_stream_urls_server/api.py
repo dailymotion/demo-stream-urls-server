@@ -110,62 +110,6 @@ async def get_stream_urls_route(
         ) from e
 
 
-@app.get("/permanent-stream-url")
-async def get_permanent_stream_url_route(
-    video_id: str,
-    video_format: str,
-    client_ip: str = Depends(get_client_ip),
-    authorization: str = Depends(get_access_token),
-):
-    """Request Dailymotion API to get a video stream URL and redirect to it"""
-
-    try:
-        stream_urls = await get_stream_urls(
-            video_id=video_id,
-            video_formats=video_format,
-            client_ip=client_ip,
-            authorization=authorization,
-        )
-
-    except aiohttp.ClientResponseError as e:
-        raise HTTPException(
-            status_code=e.status,
-            detail=e.message,
-        ) from e
-    except Exception as e:  # pylint: disable=broad-except
-        exception_type = type(e).__name__
-        exception_message = str(e)
-
-        logger.error(
-            "Failed to get stream URL: "
-            "client_ip=%s, video_id=%s, video_format=%s, "
-            "exception_type=%s, exception_message=%s",
-            client_ip,
-            video_id,
-            video_format,
-            exception_type,
-            exception_message,
-        )
-
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error",
-        ) from e
-
-    try:
-        stream_url = stream_urls[video_format]
-    except (KeyError, TypeError):
-        stream_url = None
-
-    if not stream_url:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Format {video_format} not found",
-        )
-
-    return RedirectResponse(stream_url)
-
-
 app.mount(
     "/demo",
     StaticFiles(directory=Path(__file__).parent.joinpath("demo"), html=True),

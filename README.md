@@ -42,11 +42,6 @@ Then run `bin/start-api.sh`.
 From your client browse to
 `http://<your-server-ip>:8000/stream-urls?video_id=<video_id>&video_formats=<format1<,format2>>`
 
-### Fetch permanent stream URL
-
-Directly point your player to
-`http://<your-server-ip>:8000/permanent-stream-url?video_id=<video_id>&video_format=<format>`
-
 #### Note About End-User IP
 
 The Stream URLs Server gets the end-user IP address from the HTTP request made by the latter.

@@ -1,8 +1,3 @@
-# 0.0.5 (2024-03-05)
-
-- Add /permanent-stream-url route
-- Lock python version to `>=3.11,<3.12` for now (update to python >3.11 will be done in a dedicated PR)
-
 # 0.0.4 (2023-04-03)
 
 - Switch Docker base image from `python:3.11-alpine` to `python:3.11` (fix [#6](https://github.com/dailymotion/demo-stream-urls-server/issues/6))
